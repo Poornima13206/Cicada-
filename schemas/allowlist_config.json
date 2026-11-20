@@ -1,0 +1,70 @@
+{
+  "version": "1.0.0",
+  "data_policy": {
+    "default_action": "DROP",
+    "enforce_strict_allowlist": true
+  },
+  "allowlisted_fields": [
+    "payload_id",
+    "collector_id",
+    "tenant_id",
+    "region",
+    "timestamp_utc",
+    "source_timezone",
+    "metrics.cpu_usage_pct",
+    "metrics.memory_usage_pct",
+    "metrics.disk_io_pct",
+    "metrics.network_latency_ms",
+    "metrics.packet_loss_pct",
+    "metrics.bandwidth_mbps",
+    "security_summary.auth_failure_count",
+    "security_summary.risk_level",
+    "security_summary.anomaly_flag",
+    "collector_health.status",
+    "collector_health.buffer_queue_depth",
+    "collector_health.version",
+    "collector_health.uptime_seconds"
+  ],
+  "prohibited_fields": [
+    "raw_logs",
+    "payload",
+    "request_body",
+    "response_body",
+    "password",
+    "secret",
+    "token",
+    "authorization",
+    "api_key",
+    "private_key",
+    "user_email",
+    "customer_id",
+    "credit_card"
+  ],
+  "scrubbing_patterns": [
+    {
+      "name": "bearer_token",
+      "regex": "(?i)bearer\\s+[a-zA-Z0-9_\\-\\.]+",
+      "replacement": "[REDACTED_BEARER_TOKEN]"
+    },
+    {
+      "name": "api_key",
+      "regex": "(?i)(api[_-]?key|secret|password|passwd|pwd)[\"':= ]+([a-zA-Z0-9!@#$%^&*()_+=\\-\\.]+)",
+      "replacement": "$1: [REDACTED_SECRET]"
+    },
+    {
+      "name": "private_ipv4",
+      "regex": "\\b(10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|172\\.(1[6-9]|2[0-9]|3[0-1])\\.\\d{1,3}\\.\\d{1,3}|192\\.168\\.\\d{1,3}\\.\\d{1,3})\\b",
+      "replacement": "[LOCAL_IP_MASKED]"
+    },
+    {
+      "name": "email_pii",
+      "regex": "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
+      "replacement": "[REDACTED_EMAIL]"
+    }
+  ],
+  "pseudonymization": {
+    "salt": "cicada-tenant-salt-9812",
+    "algorithm": "sha256",
+    "prefix": "node-"
+  }
+}

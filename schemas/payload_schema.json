@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CICADA Observability Metadata Egress Payload",
+  "description": "Strict schema for allow-listed operational metadata transmitted from Tier 1 Collector to Tier 2 SaaS. Raw logs, credentials, and unapproved fields are prohibited.",
+  "type": "object",
+  "required": [
+    "payload_id",
+    "collector_id",
+    "tenant_id",
+    "region",
+    "timestamp_utc",
+    "source_timezone",
+    "metrics",
+    "security_summary",
+    "collector_health"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "payload_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique UUIDv4 per payload ensuring idempotent delivery and deduplication after reconnects."
+    },
+    "collector_id": {
+      "type": "string",
+      "pattern": "^col-[a-z0-9-]+$",
+      "description": "Pseudonymous identifier of the local collector instance."
+    },
+    "tenant_id": {
+      "type": "string",
+      "pattern": "^tenant-[a-z0-9-]+$",
+      "description": "Tenant account boundary identifier for multi-tenant isolation."
+    },
+    "region": {
+      "type": "string",
+      "enum": ["ap-south-1", "eu-west-1", "us-east-1", "ap-southeast-1"],
+      "description": "Designated regional ingest gateway respecting data residency."
+    },
+    "timestamp_utc": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp of when telemetry was generated locally."
+    },
+    "source_timezone": {
+      "type": "string",
+      "pattern": "^[+-][0-9]{2}:[0-9]{2}$",
+      "description": "Source timezone offset for contextual dashboard rendering (e.g. +05:30)."
+    },
+    "metrics": {
+      "type": "object",
+      "required": [
+        "cpu_usage_pct",
+        "memory_usage_pct",
+        "disk_io_pct",
+        "network_latency_ms",
+        "packet_loss_pct",
+        "bandwidth_mbps"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cpu_usage_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "memory_usage_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "disk_io_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "network_latency_ms": { "type": "number", "minimum": 0 },
+        "packet_loss_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "bandwidth_mbps": { "type": "number", "minimum": 0 }
+      }
+    },
+    "security_summary": {
+      "type": "object",
+      "required": [
+        "auth_failure_count",
+        "risk_level",
+        "anomaly_flag"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "auth_failure_count": { "type": "integer", "minimum": 0 },
+        "risk_level": { "type": "string", "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"] },
+        "anomaly_flag": { "type": "boolean" }
+      }
+    },
+    "collector_health": {
+      "type": "object",
+      "required": [
+        "status",
+        "buffer_queue_depth",
+        "version",
+        "uptime_seconds"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "type": "string", "enum": ["HEALTHY", "DEGRADED", "BUFFERING"] },
+        "buffer_queue_depth": { "type": "integer", "minimum": 0 },
+        "version": { "type": "string" },
+        "uptime_seconds": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}
